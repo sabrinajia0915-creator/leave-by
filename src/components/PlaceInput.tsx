@@ -1,12 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { hasMapsKey, placesLib, type PlaceValue } from '../lib/maps'
-
-interface Suggestion {
-  id: string
-  main: string
-  secondary: string
-  prediction: google.maps.places.PlacePrediction
-}
+import { fetchSuggestions, type PlaceValue, type Suggestion } from '../lib/maps'
 
 interface Props {
   label: string
@@ -25,7 +18,6 @@ export function PlaceInput({ label, placeholder, value, onChange, allowCurrentLo
   const [active, setActive] = useState(-1)
   const [locating, setLocating] = useState(false)
   const [locError, setLocError] = useState<string | null>(null)
-  const tokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null)
   const reqRef = useRef(0)
 
   // Keep the box in sync when the value is set from outside (saved defaults, geolocation).
@@ -34,54 +26,36 @@ export function PlaceInput({ label, placeholder, value, onChange, allowCurrentLo
   }, [value])
 
   useEffect(() => {
-    if (!hasMapsKey || !open) return
+    if (!open) return
     const q = text.trim()
     if (q.length < 2 || q === value?.label) {
       setSuggestions([])
       return
     }
     const req = ++reqRef.current
+    const ctrl = new AbortController()
     const t = setTimeout(async () => {
       try {
-        const { AutocompleteSuggestion, AutocompleteSessionToken } = await placesLib()
-        tokenRef.current ??= new AutocompleteSessionToken()
-        const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
-          input: q,
-          sessionToken: tokenRef.current,
-        })
+        const results = await fetchSuggestions(q, ctrl.signal)
         if (req !== reqRef.current) return
-        setSuggestions(
-          suggestions
-            .map((s) => s.placePrediction)
-            .filter((p): p is google.maps.places.PlacePrediction => !!p)
-            .map((p) => ({
-              id: p.placeId,
-              main: p.mainText?.toString() ?? p.text.toString(),
-              secondary: p.secondaryText?.toString() ?? '',
-              prediction: p,
-            })),
-        )
+        setSuggestions(results)
         setActive(-1)
       } catch {
         if (req === reqRef.current) setSuggestions([])
       }
-    }, 250)
-    return () => clearTimeout(t)
+    }, 300)
+    return () => {
+      clearTimeout(t)
+      ctrl.abort()
+    }
   }, [text, open, value?.label])
 
-  async function choose(s: Suggestion) {
+  function choose(s: Suggestion) {
     setOpen(false)
     setSuggestions([])
     const label = s.secondary ? `${s.main}, ${s.secondary}` : s.main
     setText(label)
-    try {
-      const place = s.prediction.toPlace()
-      await place.fetchFields({ fields: ['location', 'displayName', 'formattedAddress'] })
-      onChange({ label, location: place.location?.toJSON(), placeId: s.id })
-    } catch {
-      onChange({ label, placeId: s.id })
-    }
-    tokenRef.current = null // session ends after a selection
+    onChange({ label, placeId: s.placeId })
   }
 
   function commitText() {
@@ -166,7 +140,7 @@ export function PlaceInput({ label, placeholder, value, onChange, allowCurrentLo
             <ul className="suggestions" id={listId} role="listbox">
               {suggestions.map((s, i) => (
                 <li
-                  key={s.id}
+                  key={s.placeId}
                   id={`${listId}-${i}`}
                   role="option"
                   aria-selected={i === active}

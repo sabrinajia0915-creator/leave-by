@@ -9,7 +9,7 @@ import {
   directionsUrl,
   formatDistance,
   getTravel,
-  hasMapsKey,
+  ApiError,
   type PlaceValue,
   type TravelMode,
   type TravelResult,
@@ -52,7 +52,7 @@ export default function App() {
   const [prepMin, setPrepMin] = useState(defaults.prepMin)
   const [bufferMin, setBufferMin] = useState(defaults.bufferMin)
   const [parkingMin, setParkingMin] = useState(defaults.parkingMin)
-  const [manual, setManual] = useState(!hasMapsKey)
+  const [manual, setManual] = useState(false)
   const [manualMin, setManualMin] = useState(20)
   const [travel, setTravel] = useState<TravelState>({ status: 'idle' })
 
@@ -87,8 +87,7 @@ export default function App() {
         .then((result) => !cancelled && setTravel({ status: 'ok', result }))
         .catch((e: unknown) => {
           if (cancelled) return
-          const msg = e instanceof Error ? e.message : String(e)
-          setTravel({ status: 'error', error: friendlyError(msg) })
+          setTravel({ status: 'error', error: friendlyError(e) })
         })
     }, 400)
     return () => {
@@ -207,15 +206,9 @@ export default function App() {
                   />
                   <span>min</span>
                 </div>
-                {hasMapsKey ? (
-                  <button type="button" className="link" onClick={() => setManual(false)}>
-                    Look it up with Google Maps instead
-                  </button>
-                ) : (
-                  <p className="hint">
-                    Add a Google Maps API key to look up travel times automatically (see README).
-                  </p>
-                )}
+                <button type="button" className="link" onClick={() => setManual(false)}>
+                  Look it up with Google Maps instead
+                </button>
               </div>
             ) : (
               <TravelStatus
@@ -344,14 +337,21 @@ function TravelStatus({
   return null
 }
 
-function friendlyError(msg: string) {
-  if (/No route/i.test(msg)) return 'Google Maps couldn’t find a route between these places.'
-  if (/referer|blocked/i.test(msg))
-    return 'Google blocked this site — add http://localhost:5173/* to the API key’s website restrictions.'
-  if (/key|denied|auth|billing|not activated|REQUEST_DENIED/i.test(msg))
-    return 'Google Maps rejected the request — check the API key and that the Routes API is enabled.'
-  if (/load/i.test(msg)) return 'Couldn’t reach Google Maps.'
-  return 'Couldn’t get a travel time right now.'
+function friendlyError(e: unknown) {
+  switch (e instanceof ApiError ? e.code : 'upstream') {
+    case 'no_route':
+      return 'Google Maps couldn’t find a route between these places.'
+    case 'rate_limited':
+      return 'Too many lookups in a short time — wait a few minutes and try again.'
+    case 'not_configured':
+      return 'Travel-time lookups aren’t set up on the server yet (see README).'
+    case 'denied':
+      return 'Google Maps rejected the request — check the server API key and that the Routes and Places APIs are enabled.'
+    case 'network':
+      return 'Couldn’t reach the server — check your connection.'
+    default:
+      return 'Couldn’t get a travel time right now.'
+  }
 }
 
 function EmptyState({ loading }: { loading: boolean }) {

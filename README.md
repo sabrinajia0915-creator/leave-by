@@ -15,22 +15,33 @@ npm run dev
 
 Open http://localhost:5173. Without an API key the app still works: you type the travel time yourself.
 
+## How Google Maps is connected
+
+The browser never talks to Google directly. It calls two small server functions in `api/`, and those call Google with a key that only the server knows:
+
+```
+Browser ──▶ /api/autocomplete, /api/route (Vercel functions) ──▶ Google
+```
+
+- `api/autocomplete.ts`: address suggestions (Places API (New))
+- `api/route.ts`: travel time (Routes API)
+- Both reject requests from other websites, check their input, and limit how many requests each visitor can make. Google quotas and a billing budget are the final safety net.
+
+`npm run dev` runs these functions locally too.
+
 ## Turn on Google Maps travel times
 
-1. Go to <https://console.cloud.google.com/>, create a project and set up billing. Normal personal use stays inside Google's monthly free usage.
-2. Under **APIs & Services → Library**, enable:
-   - **Maps JavaScript API**
-   - **Places API (New)**
-   - **Routes API**
-3. Under **APIs & Services → Credentials**, click **Create credentials → API key**.
-4. Restrict the key (recommended):
-   - *Application restrictions*: **Websites**, add `http://localhost:5173/*` (and your deployed URL later)
-   - *API restrictions*: the three APIs above
-5. Copy `.env.example` to `.env.local` and paste the key:
-   ```
-   VITE_GOOGLE_MAPS_API_KEY=your-key-here
-   ```
-6. Restart `npm run dev`.
+1. Go to <https://console.cloud.google.com/> and create a project with billing set up. Normal personal use stays inside Google's monthly free usage.
+2. Under **APIs & Services → Library**, enable **Places API (New)** and **Routes API**.
+3. Under **APIs & Services → Credentials**, click **Create credentials → API key**, then edit it:
+   - *Application restrictions*: **None**. It's a server key, and Vercel's server addresses change.
+   - *API restrictions*: **Restrict key** to Places API (New) and Routes API
+4. For local use, copy `.env.example` to `.env.local` and set `GOOGLE_MAPS_SERVER_KEY=…`.
+5. On Vercel: **Settings → Environment Variables**, add `GOOGLE_MAPS_SERVER_KEY` as a **Sensitive** variable for Production and Preview, then redeploy.
+
+Never give this key a `VITE_` prefix. That would put it in the public web page.
+
+Recommended: set daily quotas on both APIs and a small billing budget (for example $1 with alerts).
 
 ## How the time is worked out
 
