@@ -1,4 +1,5 @@
 import type { Schedule } from './schedule'
+import type { PrepPreset } from './storage'
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
 
@@ -24,15 +25,24 @@ function vevent(uid: string, start: Date, end: Date, summary: string, descriptio
 }
 
 /** A calendar file with two alarmed blocks: getting ready, and travelling. */
-export function buildIcs(s: Schedule, eventName: string, destination: string, mapsUrl: string) {
+export function buildIcs(
+  s: Schedule,
+  eventName: string,
+  destination: string,
+  mapsUrl: string,
+  prepPreset?: PrepPreset,
+) {
   const name = eventName.trim() || 'your event'
+  const prepNote = prepPreset
+    ? `${prepPreset.name}${prepPreset.purpose ? ` — ${prepPreset.purpose}` : ''}\n`
+    : ''
   const id = `${s.eventTime.getTime()}-${Math.random().toString(36).slice(2, 8)}`
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Leave By//EN',
     'CALSCALE:GREGORIAN',
-    ...vevent(`prep-${id}`, s.startPrep, s.leaveBy, `Start getting ready for ${name}`, `Leave by ${s.leaveBy.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`),
+    ...vevent(`prep-${id}`, s.startPrep, s.leaveBy, `Start getting ready for ${name}`, `${prepNote}Leave by ${s.leaveBy.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.`),
     ...vevent(`leave-${id}`, s.leaveBy, s.arriveAt, `Leave now for ${name}`, `Directions: ${mapsUrl}`, destination),
     'END:VCALENDAR',
   ]

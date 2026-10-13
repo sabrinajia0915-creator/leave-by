@@ -119,6 +119,7 @@ export default function App() {
         })
       : null
 
+  const prepPreset = presets.find((p) => p.id === prepPresetId)
   const hasSchedule = schedule != null
   const mapsUrl = destination ? directionsUrl(origin, destination, mode) : undefined
 
@@ -142,7 +143,7 @@ export default function App() {
 
   function addToCalendar() {
     if (!schedule) return
-    const ics = buildIcs(schedule, eventName, destination?.label ?? '', mapsUrl ?? '')
+    const ics = buildIcs(schedule, eventName, destination?.label ?? '', mapsUrl ?? '', prepPreset)
     const slug = (eventName.trim() || 'event').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
     downloadIcs(ics, `leave-by-${slug || 'event'}.ics`)
   }
@@ -270,6 +271,7 @@ export default function App() {
               mode={mode}
               eventName={eventName}
               prepMin={prepMin}
+              prepLabel={prepPreset?.name}
               bufferMin={bufferMin}
               parkingMin={effectiveParking}
               travelNote={travelNote}

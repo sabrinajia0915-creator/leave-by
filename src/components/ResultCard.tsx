@@ -17,6 +17,8 @@ interface Props {
   mode: TravelMode
   eventName: string
   prepMin: number
+  /** Name of the prep preset in use, if any. */
+  prepLabel?: string
   bufferMin: number
   parkingMin: number
   travelNote?: string
@@ -37,7 +39,7 @@ const PHASE_COPY: Record<Phase, (s: Schedule, now: Date) => string> = {
 }
 
 export function ResultCard(props: Props) {
-  const { schedule: s, now, mode, eventName, prepMin, bufferMin, parkingMin, travelNote, mapsUrl } = props
+  const { schedule: s, now, mode, eventName, prepMin, prepLabel, bufferMin, parkingMin, travelNote, mapsUrl } = props
   const phase = getPhase(s, now)
   const showDate = !isSameDay(s.startPrep, now)
   const showParking = mode === 'DRIVING' && parkingMin > 0
@@ -49,7 +51,7 @@ export function ResultCard(props: Props) {
       key: 'prep',
       time: s.startPrep,
       title: 'Start getting ready',
-      detail: `${formatDuration(prepMin)} to get ready`,
+      detail: `${prepLabel ? `${prepLabel} · ` : ''}${formatDuration(prepMin)} to get ready`,
       current: phase === 'prep' || phase === 'before-prep',
     },
     {

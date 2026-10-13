@@ -52,6 +52,7 @@ start getting ready = leave by − getting-ready time
 | **Fewer component files** than listed in the plan. | The event form, timeline and countdown were small enough to live in `App.tsx` and `ResultCard.tsx`. |
 | **Deployed to Vercel and connected to GitHub.** | Course requirement: the app is live, and pushes deploy automatically. |
 | **No Supabase.** | The app doesn't save data to a server. Settings stay in the user's own browser (localStorage). |
+| **Named prep-time presets.** "Time to get ready" chips are now your own presets, each with a name, minutes and a purpose (e.g. "Date night · 45 min: makeup + outfit for a date"), with starters you can edit or delete. The preset name shows in the timeline and the calendar file. | Getting ready takes different amounts of time for different occasions; a bare number didn't say what it was for. Saved on the device like other settings. |
 
 ## Security review
 
@@ -68,7 +69,7 @@ Run on 2026-10-06. The `/security-review` command needs the session to be open i
 
 ## Verification status
 
-- ✅ 23 unit tests (`npm test`): the calculation, the server's input checks, rate limiting, the driving traffic refinement and the transit departure time
+- ✅ 29 unit tests (`npm test`): the calculation, prep preset validation, the calendar file, the server's input checks, rate limiting, the driving traffic refinement and the transit departure time
 - ✅ Real trips in all four modes, locally and on the live site; driving matched Google's traffic-aware time for the same departure
 - ✅ Phone width (375 px) in dark mode, with no horizontal scrolling
 - ✅ Manual travel-time fallback
