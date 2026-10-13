@@ -71,7 +71,7 @@ export default function App() {
   // Remember the user's usual settings.
   useEffect(() => {
     const savedOrigin = origin?.label === 'Current location' ? loadDefaults().origin : origin
-    saveDefaults({ origin: savedOrigin, mode, prepMin, bufferMin, parkingMin })
+    saveDefaults({ origin: savedOrigin, mode, prepMin, bufferMin, parkingMin, prepPresetId: null })
   }, [origin, mode, prepMin, bufferMin, parkingMin])
 
   // Look up travel time whenever the trip changes.
