@@ -82,10 +82,27 @@ export function PrepPresetPicker({ presets, presetId, minutes, onPick, onPresets
             Custom
           </button>
         )}
+        <button
+          type="button"
+          className="chip chip-new"
+          aria-expanded={editing === 'new'}
+          onClick={() => setEditing('new')}
+        >
+          + New
+        </button>
       </div>
-      {selected?.purpose && <p className="hint">{selected.purpose}</p>}
+      {editing === 'new' ? (
+        <PresetForm
+          // Start from the custom number if one was typed, e.g. 45 → "Date night".
+          initial={{ name: '', minutes: custom && minutes > 0 ? String(minutes) : '', purpose: '' }}
+          onSave={save}
+          onCancel={() => setEditing(null)}
+        />
+      ) : (
+        selected?.purpose && <p className="hint">{selected.purpose}</p>
+      )}
 
-      <details className="presets-edit" onToggle={(e) => !e.currentTarget.open && setEditing(null)}>
+      <details className="presets-edit" onToggle={(e) => !e.currentTarget.open && editing !== 'new' && setEditing(null)}>
         <summary>Edit presets</summary>
         <ul className="preset-list">
           {presets.map((p) =>
@@ -123,17 +140,6 @@ export function PrepPresetPicker({ presets, presetId, minutes, onPick, onPresets
             ),
           )}
         </ul>
-        {editing === 'new' ? (
-          <PresetForm
-            initial={{ name: '', minutes: '', purpose: '' }}
-            onSave={save}
-            onCancel={() => setEditing(null)}
-          />
-        ) : (
-          <button type="button" className="link" onClick={() => setEditing('new')}>
-            + Add a preset
-          </button>
-        )}
       </details>
     </fieldset>
   )

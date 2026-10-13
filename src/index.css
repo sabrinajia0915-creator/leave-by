@@ -272,6 +272,9 @@ input[type='date'], input[type='time'] { appearance: none; -webkit-appearance: n
 
 /* Prep presets */
 textarea { height: auto; padding: 10px 14px; resize: vertical; display: block; }
+.chip-new { border-style: dashed; color: var(--accent); }
+.chip-new[aria-expanded='true'] { border-color: var(--accent); background: var(--accent-soft); }
+.chips + .preset-form { margin-top: 12px; }
 .presets-edit { margin-top: 10px; }
 .presets-edit summary {
   font-size: 14px;
