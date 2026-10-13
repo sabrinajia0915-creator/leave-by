@@ -59,7 +59,7 @@ body {
   font-feature-settings: 'tnum' 1, 'cv11' 1;
 }
 
-button, input { font: inherit; color: inherit; }
+button, input, textarea { font: inherit; color: inherit; }
 
 .app {
   max-width: 1080px;
@@ -136,7 +136,7 @@ button, input { font: inherit; color: inherit; }
 }
 .optional, .legend-hint { font-weight: 400; color: var(--ink-3); margin-left: 6px; }
 
-input[type='text'], input[type='date'], input[type='time'], input[type='number'] {
+input[type='text'], input[type='date'], input[type='time'], input[type='number'], textarea {
   width: 100%;
   height: 46px;
   padding: 0 14px;
@@ -148,7 +148,7 @@ input[type='text'], input[type='date'], input[type='time'], input[type='number']
   min-width: 0;
 }
 input::placeholder { color: var(--ink-3); }
-input:focus {
+input:focus, textarea:focus {
   border-color: var(--accent);
   background: var(--surface);
   box-shadow: 0 0 0 4px var(--accent-soft);
@@ -269,6 +269,30 @@ input[type='date'], input[type='time'] { appearance: none; -webkit-appearance: n
   box-shadow: none;
   color: inherit;
 }
+
+/* Prep presets */
+textarea { height: auto; padding: 10px 14px; resize: vertical; display: block; }
+.presets-edit { margin-top: 10px; }
+.presets-edit summary {
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--accent);
+  cursor: pointer;
+}
+.preset-list { list-style: none; margin: 10px 0; padding: 0; }
+.preset-list li { padding: 10px 0; border-top: 1px solid var(--line); }
+.preset-list li:last-child { border-bottom: 1px solid var(--line); }
+.preset-row { display: flex; align-items: center; gap: 14px; }
+.preset-row > div { flex: 1; min-width: 0; font-size: 14px; }
+.preset-purpose { display: block; font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
+.link.danger { color: var(--bad); }
+.preset-form { padding: 4px 0; }
+.preset-form label input, .preset-form label textarea { margin-top: 6px; font-weight: 400; color: var(--ink); }
+.preset-form .with-suffix { display: block; margin-top: 6px; }
+.preset-form .with-suffix input { margin-top: 0; }
+.preset-form .row-2 { margin-bottom: 14px; }
+.preset-form-actions { display: flex; gap: 10px; margin-top: 12px; }
+.preset-form-actions .btn { flex: 0 1 120px; }
 
 .travel-status {
   display: flex;

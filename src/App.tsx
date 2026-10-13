@@ -51,7 +51,7 @@ export default function App() {
   const [destination, setDestination] = useState<PlaceValue | null>(null)
   const [mode, setMode] = useState<TravelMode>(defaults.mode)
   const [prepMin, setPrepMin] = useState(defaults.prepMin)
-  const [presets] = useState<PrepPreset[]>(() => loadPresets())
+  const [presets, setPresets] = useState<PrepPreset[]>(() => loadPresets())
   // Only keep the remembered preset if it still matches the saved minutes.
   const [prepPresetId, setPrepPresetId] = useState<string | null>(() => {
     const p = presets.find((x) => x.id === defaults.prepPresetId)
@@ -242,6 +242,7 @@ export default function App() {
                 setPrepPresetId(id)
                 setPrepMin(min)
               }}
+              onPresetsChange={setPresets}
             />
             <ChipPicker
               label="Arrive early by"
