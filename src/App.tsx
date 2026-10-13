@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { addHours, format, startOfHour } from 'date-fns'
 import { ChipPicker } from './components/ChipPicker'
 import { ModeToggle } from './components/ModeToggle'
+import { PrepPresetPicker } from './components/PrepPresetPicker'
 import { PlaceInput } from './components/PlaceInput'
 import { ResultCard } from './components/ResultCard'
 import { buildIcs, downloadIcs } from './lib/ics'
@@ -15,7 +16,7 @@ import {
   type TravelResult,
 } from './lib/maps'
 import { buildSchedule, formatDuration } from './lib/schedule'
-import { loadDefaults, saveDefaults } from './lib/storage'
+import { loadDefaults, loadPresets, saveDefaults, savePresets, type PrepPreset } from './lib/storage'
 
 type TravelState =
   | { status: 'idle'; result?: TravelResult }
@@ -50,6 +51,12 @@ export default function App() {
   const [destination, setDestination] = useState<PlaceValue | null>(null)
   const [mode, setMode] = useState<TravelMode>(defaults.mode)
   const [prepMin, setPrepMin] = useState(defaults.prepMin)
+  const [presets] = useState<PrepPreset[]>(() => loadPresets())
+  // Only keep the remembered preset if it still matches the saved minutes.
+  const [prepPresetId, setPrepPresetId] = useState<string | null>(() => {
+    const p = presets.find((x) => x.id === defaults.prepPresetId)
+    return p && p.minutes === defaults.prepMin ? p.id : null
+  })
   const [bufferMin, setBufferMin] = useState(defaults.bufferMin)
   const [parkingMin, setParkingMin] = useState(defaults.parkingMin)
   const [manual, setManual] = useState(false)
@@ -71,8 +78,10 @@ export default function App() {
   // Remember the user's usual settings.
   useEffect(() => {
     const savedOrigin = origin?.label === 'Current location' ? loadDefaults().origin : origin
-    saveDefaults({ origin: savedOrigin, mode, prepMin, bufferMin, parkingMin, prepPresetId: null })
-  }, [origin, mode, prepMin, bufferMin, parkingMin])
+    saveDefaults({ origin: savedOrigin, mode, prepMin, bufferMin, parkingMin, prepPresetId })
+  }, [origin, mode, prepMin, bufferMin, parkingMin, prepPresetId])
+
+  useEffect(() => savePresets(presets), [presets])
 
   // Look up travel time whenever the trip changes.
   useEffect(() => {
@@ -225,11 +234,14 @@ export default function App() {
 
           <section>
             <h2 className="step"><span>3</span>Your timing</h2>
-            <ChipPicker
-              label="Time to get ready"
-              options={[15, 30, 45, 60]}
-              value={prepMin}
-              onChange={setPrepMin}
+            <PrepPresetPicker
+              presets={presets}
+              presetId={prepPresetId}
+              minutes={prepMin}
+              onPick={(id, min) => {
+                setPrepPresetId(id)
+                setPrepMin(min)
+              }}
             />
             <ChipPicker
               label="Arrive early by"
