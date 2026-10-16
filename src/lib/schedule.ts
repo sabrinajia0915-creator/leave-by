@@ -80,3 +80,19 @@ export function formatRelative(target: Date, now: Date): string {
   }
   return `${formatDuration(-diffMin)} ago`
 }
+
+/** If you leave right now: when you'd arrive, and how late that is (≤ 0 = still on time). */
+export function lateEstimate(s: Schedule, now: Date, parkingMin: number) {
+  const arrive = new Date(now.getTime() + (s.travelMin + parkingMin) * MIN)
+  return { arrive, lateMin: Math.round((arrive.getTime() - s.eventTime.getTime()) / MIN) }
+}
+
+const clock = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+
+/** A ready-to-send text, with the lateness rounded up to the next 5 minutes. */
+export function lateMessage(lateMin: number, arrive: Date, eventName: string): string {
+  const name = eventName.trim()
+  if (lateMin <= 0) return `On my way${name ? ` to ${name}` : ''}, I'll be there around ${clock(arrive)}.`
+  const rounded = Math.ceil(lateMin / 5) * 5
+  return `Running about ${rounded} min late${name ? ` for ${name}` : ''}, I'll be there around ${clock(arrive)}. Sorry!`
+}
