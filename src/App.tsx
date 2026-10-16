@@ -7,6 +7,7 @@ import { WeeklyEvents } from './components/WeeklyEvents'
 import { PlaceInput } from './components/PlaceInput'
 import { ResultCard } from './components/ResultCard'
 import { buildIcs, downloadIcs } from './lib/ics'
+import { drawShareCard, shareImage } from './lib/shareCard'
 import {
   directionsUrl,
   formatDistance,
@@ -212,6 +213,19 @@ export default function App() {
     downloadIcs(ics, `leave-by-${slug || 'event'}.ics`)
   }
 
+  async function sharePlan() {
+    if (!schedule) return
+    const blob = await drawShareCard({
+      schedule,
+      eventName,
+      place: destination?.label ?? '',
+      prepLabel: prepPreset?.name,
+      prepPurpose: prepPreset?.purpose,
+      repeatLabel: repeatWeekly && eventTime ? `Every ${format(eventTime, 'EEEE')}` : undefined,
+    })
+    await shareImage(blob, 'leave-by-plan.png', eventName.trim() || 'My plan')
+  }
+
   return (
     <div className="app">
       <header className="masthead">
@@ -372,6 +386,7 @@ export default function App() {
               travelNote={travelNote}
               mapsUrl={mapsUrl}
               onAddToCalendar={addToCalendar}
+              onShare={sharePlan}
             />
           ) : (
             <EmptyState loading={travel.status === 'loading'} />

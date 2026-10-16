@@ -34,6 +34,7 @@ interface Props {
   travelNote?: string
   mapsUrl?: string
   onAddToCalendar: () => void
+  onShare: () => void
 }
 
 const PHASE_COPY: Record<Phase, (s: Schedule, now: Date) => string> = {
@@ -137,11 +138,11 @@ export function ResultCard(props: Props) {
 
       <div className="summary-pair">
         <div>
-          <span className="k">Start getting ready</span>
+          <span className="k">Get ready</span>
           <span className="v">{fmtTime(s.startPrep)}</span>
         </div>
         <div>
-          <span className="k">{late ? 'Arrive if you leave now' : 'Arrive'}</span>
+          <span className="k">{late ? 'If you leave now' : 'Arrive'}</span>
           <span className={late && late.lateMin > 0 ? 'v late' : 'v'}>
             {fmtTime(late ? late.arrive : s.arriveAt)}
           </span>
@@ -187,6 +188,9 @@ export function ResultCard(props: Props) {
         )}
         <button type="button" className="btn" onClick={props.onAddToCalendar}>
           Add reminders to calendar
+        </button>
+        <button type="button" className="btn btn-share" onClick={props.onShare}>
+          Share my plan ✦
         </button>
       </div>
     </section>
