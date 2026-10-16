@@ -53,6 +53,8 @@ start getting ready = leave by − getting-ready time
 | **Deployed to Vercel and connected to GitHub.** | Course requirement: the app is live, and pushes deploy automatically. |
 | **No Supabase.** | The app doesn't save data to a server. Settings stay in the user's own browser (localStorage). |
 | **Named prep-time presets.** "Time to get ready" chips are now your own presets, each with a name, minutes and a purpose (e.g. "Date night · 45 min: makeup + outfit for a date"), with starters you can edit or delete. The preset name shows in the timeline and the calendar file. | Getting ready takes different amounts of time for different occasions; a bare number didn't say what it was for. Saved on the device like other settings. |
+| **Running late mode.** Once you're past your leave time, the headline says how late you'll arrive if you leave now, the arrival time turns red, and an editable "Running about 10 min late…" text can be sent (share sheet / Messages) or copied. | Knowing you're late is only half the problem; telling the people waiting should take one tap. The message never leaves the device except through the user's own share. |
+| **Weekly events.** "Repeat every Tuesday" saves an event (place, mode, prep, buffer) on the device; a chip fills in the form for its next date, and calendar reminders repeat weekly in local time. | Classes and routines happen every week; re-entering them each time was the main friction. Local time keeps reminders right across daylight-saving changes. |
 
 ## Security review
 
@@ -69,7 +71,7 @@ Run on 2026-10-06. The `/security-review` command needs the session to be open i
 
 ## Verification status
 
-- ✅ 29 unit tests (`npm test`): the calculation, prep preset validation, the calendar file, the server's input checks, rate limiting, the driving traffic refinement and the transit departure time
+- ✅ 44 unit tests (`npm test`): the calculation, running-late estimates and messages, next weekly date, prep preset and weekly event validation, the calendar file (incl. weekly repeats), the server's input checks, rate limiting, the driving traffic refinement and the transit departure time
 - ✅ Real trips in all four modes, locally and on the live site; driving matched Google's traffic-aware time for the same departure
 - ✅ Phone width (375 px) in dark mode, with no horizontal scrolling
 - ✅ Manual travel-time fallback

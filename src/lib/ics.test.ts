@@ -25,3 +25,21 @@ describe('buildIcs', () => {
     expect(buildIcs(s, 'Dinner', 'Nopa', 'https://maps.example')).toMatch(/DESCRIPTION:Leave by/)
   })
 })
+
+describe('buildIcs weekly', () => {
+  it('repeats both reminders every week', () => {
+    const ics = buildIcs(s, 'Yoga', 'Studio', 'https://maps.example', undefined, { weekly: true })
+    expect(ics.match(/RRULE:FREQ=WEEKLY/g)).toHaveLength(2)
+    expect(ics).toContain('Repeats weekly')
+  })
+
+  it('uses local clock time so daylight saving does not shift it', () => {
+    const ics = buildIcs(s, 'Yoga', 'Studio', 'https://maps.example', undefined, { weekly: true })
+    // Get ready starts 19:00 − 10 − 25 − 45 = 17:40 local.
+    expect(ics).toContain('DTSTART:20261006T174000\r\n')
+  })
+
+  it('does not repeat one-off events', () => {
+    expect(buildIcs(s, 'Dinner', 'Nopa', 'https://maps.example')).not.toContain('RRULE')
+  })
+})

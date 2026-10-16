@@ -205,7 +205,9 @@ export default function App() {
 
   function addToCalendar() {
     if (!schedule) return
-    const ics = buildIcs(schedule, eventName, destination?.label ?? '', mapsUrl ?? '', prepPreset)
+    const ics = buildIcs(schedule, eventName, destination?.label ?? '', mapsUrl ?? '', prepPreset, {
+      weekly: repeatWeekly,
+    })
     const slug = (eventName.trim() || 'event').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
     downloadIcs(ics, `leave-by-${slug || 'event'}.ics`)
   }
