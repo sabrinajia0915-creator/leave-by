@@ -1,6 +1,14 @@
 import { format, isSameDay } from 'date-fns'
 import type { TravelMode } from '../lib/maps'
-import { formatDuration, formatRelative, getPhase, type Phase, type Schedule } from '../lib/schedule'
+import { RunningLate } from './RunningLate'
+import {
+  formatDuration,
+  formatRelative,
+  getPhase,
+  lateEstimate,
+  type Phase,
+  type Schedule,
+} from '../lib/schedule'
 
 const MODE_VERB: Record<TravelMode, string> = {
   DRIVING: 'Drive',
@@ -41,12 +49,13 @@ const PHASE_COPY: Record<Phase, (s: Schedule, now: Date) => string> = {
 export function ResultCard(props: Props) {
   const { schedule: s, now, mode, eventName, prepMin, prepLabel, bufferMin, parkingMin, travelNote, mapsUrl } = props
   const phase = getPhase(s, now)
+  const late = phase === 'late' ? lateEstimate(s, now, parkingMin) : null
   const showDate = !isSameDay(s.startPrep, now)
   const showParking = mode === 'DRIVING' && parkingMin > 0
   const transitEarly =
     mode === 'TRANSIT' && s.arriveAt.getTime() < s.arriveBy.getTime() - 60_000
 
-  const steps: { key: string; time: Date; title: string; detail: string; current: boolean }[] = [
+  const steps: { key: string; time: Date; title: string; detail: string; current: boolean; late?: boolean }[] = [
     {
       key: 'prep',
       time: s.startPrep,
@@ -72,14 +81,19 @@ export function ResultCard(props: Props) {
       : []),
     {
       key: 'arrive',
-      time: s.arriveAt,
-      title: 'Arrive',
-      detail: transitEarly
+      time: late ? late.arrive : s.arriveAt,
+      title: late ? 'Arrive (if you leave now)' : 'Arrive',
+      detail: late
+        ? late.lateMin > 0
+          ? `About ${formatDuration(late.lateMin)} late`
+          : `${formatDuration(-late.lateMin)} before it starts`
+        : transitEarly
         ? `${formatDuration((s.eventTime.getTime() - s.arriveAt.getTime()) / 60_000)} before it starts`
         : bufferMin > 0
           ? `${formatDuration(bufferMin)} to spare`
           : 'Right on time',
       current: false,
+      late: !!late && late.lateMin > 0,
     },
     {
       key: 'event',
@@ -100,8 +114,20 @@ export function ResultCard(props: Props) {
         </p>
         <p className="status">
           <span className="status-dot" />
-          {PHASE_COPY[phase](s, now)}
+          {late
+            ? late.lateMin > 0
+              ? `Leave now — you'll arrive about ${formatDuration(late.lateMin)} late`
+              : `Leave now — you'll still make it with ${formatDuration(-late.lateMin)} to spare`
+            : PHASE_COPY[phase](s, now)}
         </p>
+        {late && (
+          <RunningLate
+            lateMin={late.lateMin}
+            arrive={late.arrive}
+            eventName={eventName}
+            note={mode === 'TRANSIT' ? 'Estimate: assumes the next ride takes as long as the one you missed.' : undefined}
+          />
+        )}
       </div>
 
       <div className="summary-pair">
@@ -110,14 +136,16 @@ export function ResultCard(props: Props) {
           <span className="v">{fmtTime(s.startPrep)}</span>
         </div>
         <div>
-          <span className="k">Arrive</span>
-          <span className="v">{fmtTime(s.arriveAt)}</span>
+          <span className="k">{late ? 'Arrive if you leave now' : 'Arrive'}</span>
+          <span className={late && late.lateMin > 0 ? 'v late' : 'v'}>
+            {fmtTime(late ? late.arrive : s.arriveAt)}
+          </span>
         </div>
       </div>
 
       <ol className="timeline">
         {steps.map((st) => (
-          <li key={st.key} className={st.current ? 'current' : undefined}>
+          <li key={st.key} className={[st.current && 'current', st.late && 'late'].filter(Boolean).join(' ') || undefined}>
             <time dateTime={st.time.toISOString()}>{fmtTime(st.time)}</time>
             <span className="dot" aria-hidden />
             <div>

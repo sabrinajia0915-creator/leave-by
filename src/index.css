@@ -407,6 +407,7 @@ textarea { height: auto; padding: 10px 14px; resize: vertical; display: block; }
 .summary-pair > div { padding: 14px 22px; display: flex; flex-direction: column; }
 .summary-pair > div + div { border-left: 1px solid var(--line); }
 .summary-pair .k { font-size: 13px; color: var(--ink-2); }
+.summary-pair .v.late { color: var(--bad); }
 .summary-pair .v { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
 
 /* Timeline */
@@ -458,6 +459,14 @@ textarea { height: auto; padding: 10px 14px; resize: vertical; display: block; }
 .timeline li > div { display: flex; flex-direction: column; min-width: 0; }
 .timeline strong { font-weight: 650; }
 .timeline li > div span { font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; }
+.timeline li.late time, .timeline li.late strong, .timeline li.late > div span { color: var(--bad); }
+
+/* Running late */
+.late-panel { margin-top: 16px; }
+.late-panel label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.late-panel textarea { background: var(--surface); }
+.late-actions { display: flex; gap: 10px; margin-top: 10px; }
+.late-actions .btn { flex: 1 1 0; }
 
 /* Breakdown */
 .math {
