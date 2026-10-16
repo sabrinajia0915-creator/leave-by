@@ -27,6 +27,8 @@ interface Props {
   prepMin: number
   /** Name of the prep preset in use, if any. */
   prepLabel?: string
+  /** e.g. "Every Tuesday" for a weekly event. */
+  repeatLabel?: string
   bufferMin: number
   parkingMin: number
   travelNote?: string
@@ -47,7 +49,7 @@ const PHASE_COPY: Record<Phase, (s: Schedule, now: Date) => string> = {
 }
 
 export function ResultCard(props: Props) {
-  const { schedule: s, now, mode, eventName, prepMin, prepLabel, bufferMin, parkingMin, travelNote, mapsUrl } = props
+  const { schedule: s, now, mode, eventName, prepMin, prepLabel, repeatLabel, bufferMin, parkingMin, travelNote, mapsUrl } = props
   const phase = getPhase(s, now)
   const late = phase === 'late' ? lateEstimate(s, now, parkingMin) : null
   const showDate = !isSameDay(s.startPrep, now)
@@ -107,7 +109,10 @@ export function ResultCard(props: Props) {
   return (
     <section className={`result phase-${phase}`} aria-live="polite">
       <div className="headline">
-        <p className="eyebrow">Leave by</p>
+        <p className="eyebrow">
+          Leave by
+          {repeatLabel && <span className="repeat-tag"> · {repeatLabel}, next {format(s.eventTime, 'EEE, MMM d')}</span>}
+        </p>
         <p className="big-time">
           {fmtTime(s.leaveBy)}
           {showDate && <span className="big-date">{format(s.leaveBy, 'EEE, MMM d')}</span>}

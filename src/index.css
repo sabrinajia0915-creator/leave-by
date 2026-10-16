@@ -270,6 +270,14 @@ input[type='date'], input[type='time'] { appearance: none; -webkit-appearance: n
   color: inherit;
 }
 
+/* Weekly events */
+.repeat { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 550; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
+.repeat .link { white-space: nowrap; }
+.link:disabled { color: var(--ink-3); cursor: not-allowed; text-decoration: none; }
+.repeat-tag { text-transform: none; letter-spacing: 0; font-weight: 550; }
+
 /* Prep presets */
 textarea { height: auto; padding: 10px 14px; resize: vertical; display: block; }
 .chip-new { border-style: dashed; color: var(--accent); }

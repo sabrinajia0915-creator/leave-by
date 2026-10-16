@@ -3,6 +3,7 @@ import { addHours, format, startOfHour } from 'date-fns'
 import { ChipPicker } from './components/ChipPicker'
 import { ModeToggle } from './components/ModeToggle'
 import { PrepPresetPicker } from './components/PrepPresetPicker'
+import { WeeklyEvents } from './components/WeeklyEvents'
 import { PlaceInput } from './components/PlaceInput'
 import { ResultCard } from './components/ResultCard'
 import { buildIcs, downloadIcs } from './lib/ics'
@@ -15,8 +16,17 @@ import {
   type TravelMode,
   type TravelResult,
 } from './lib/maps'
-import { buildSchedule, formatDuration } from './lib/schedule'
-import { loadDefaults, loadPresets, saveDefaults, savePresets, type PrepPreset } from './lib/storage'
+import { buildSchedule, formatDuration, nextOccurrence } from './lib/schedule'
+import {
+  loadDefaults,
+  loadPresets,
+  loadWeeklyEvents,
+  saveDefaults,
+  savePresets,
+  saveWeeklyEvents,
+  type PrepPreset,
+  type WeeklyEvent,
+} from './lib/storage'
 
 type TravelState =
   | { status: 'idle'; result?: TravelResult }
@@ -62,6 +72,10 @@ export default function App() {
   const [manual, setManual] = useState(false)
   const [manualMin, setManualMin] = useState(20)
   const [travel, setTravel] = useState<TravelState>({ status: 'idle' })
+  const [weeklyEvents, setWeeklyEvents] = useState<WeeklyEvent[]>(() => loadWeeklyEvents())
+  const [weeklyId, setWeeklyId] = useState<string | null>(null)
+  const [repeatWeekly, setRepeatWeekly] = useState(false)
+  const [weeklySaved, setWeeklySaved] = useState(false)
 
   const eventTime = useMemo(() => {
     if (!date || !time) return null
@@ -82,6 +96,54 @@ export default function App() {
   }, [origin, mode, prepMin, bufferMin, parkingMin, prepPresetId])
 
   useEffect(() => savePresets(presets), [presets])
+  useEffect(() => saveWeeklyEvents(weeklyEvents), [weeklyEvents])
+
+  function loadWeekly(e: WeeklyEvent) {
+    setEventName(e.name)
+    setDate(format(nextOccurrence(e.weekday, e.time, new Date()), 'yyyy-MM-dd'))
+    setTime(e.time)
+    setDestination(e.destination)
+    if (e.origin) setOrigin(e.origin)
+    setMode(e.mode)
+    setPrepPresetId(presets.some((p) => p.id === e.prepPresetId) ? e.prepPresetId : null)
+    setPrepMin(e.prepMin)
+    setBufferMin(e.bufferMin)
+    setParkingMin(e.parkingMin)
+    setWeeklyId(e.id)
+    setRepeatWeekly(true)
+    setWeeklySaved(false)
+  }
+
+  function saveWeekly() {
+    if (!eventTime || !destination) return
+    const e: WeeklyEvent = {
+      id: weeklyId ?? crypto.randomUUID(),
+      name: eventName.trim(),
+      weekday: eventTime.getDay(),
+      time,
+      destination,
+      origin: origin?.label === 'Current location' ? null : origin,
+      mode,
+      prepPresetId,
+      prepMin,
+      bufferMin,
+      parkingMin,
+    }
+    setWeeklyEvents((list) =>
+      list.some((x) => x.id === e.id) ? list.map((x) => (x.id === e.id ? e : x)) : [...list, e],
+    )
+    setWeeklyId(e.id)
+    setWeeklySaved(true)
+    setTimeout(() => setWeeklySaved(false), 2500)
+  }
+
+  function deleteWeekly(id: string) {
+    setWeeklyEvents((list) => list.filter((x) => x.id !== id))
+    if (id === weeklyId) {
+      setWeeklyId(null)
+      setRepeatWeekly(false)
+    }
+  }
 
   // Look up travel time whenever the trip changes.
   useEffect(() => {
@@ -162,6 +224,12 @@ export default function App() {
         <form className="card form" onSubmit={(e) => e.preventDefault()}>
           <section>
             <h2 className="step"><span>1</span>What & when</h2>
+            <WeeklyEvents
+              events={weeklyEvents}
+              activeId={weeklyId}
+              onLoad={loadWeekly}
+              onDelete={deleteWeekly}
+            />
             <div className="field">
               <label htmlFor="name">Event <span className="optional">optional</span></label>
               <input
@@ -182,6 +250,30 @@ export default function App() {
                 <input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
               </div>
             </div>
+            <div className="repeat">
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={repeatWeekly}
+                  onChange={(e) => {
+                    setRepeatWeekly(e.target.checked)
+                    if (!e.target.checked) setWeeklyId(null)
+                  }}
+                />
+                Repeat every {eventTime ? format(eventTime, 'EEEE') : 'week'}
+              </label>
+              {repeatWeekly && (
+                <button
+                  type="button"
+                  className="link"
+                  disabled={!destination || !eventTime}
+                  onClick={saveWeekly}
+                >
+                  {weeklySaved ? 'Saved ✓' : weeklyId ? 'Update saved event' : 'Save weekly event'}
+                </button>
+              )}
+            </div>
+            {repeatWeekly && !destination && <p className="hint">Add where it is to save it.</p>}
           </section>
 
           <section>
@@ -272,6 +364,7 @@ export default function App() {
               eventName={eventName}
               prepMin={prepMin}
               prepLabel={prepPreset?.name}
+              repeatLabel={repeatWeekly && eventTime ? `Every ${format(eventTime, 'EEEE')}` : undefined}
               bufferMin={bufferMin}
               parkingMin={effectiveParking}
               travelNote={travelNote}
