@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSchedule, formatDuration, formatRelative, getPhase, lateEstimate, lateMessage } from './schedule'
+import { buildSchedule, formatDuration, formatRelative, getPhase, lateEstimate, lateMessage, nextOccurrence } from './schedule'
 
 const at = (s: string) => new Date(s)
 
@@ -131,5 +131,24 @@ describe('lateMessage', () => {
 
   it('says on my way when still on time', () => {
     expect(lateMessage(-3, arrive, 'dinner')).toBe("On my way to dinner, I'll be there around 7:12 PM.")
+  })
+})
+
+describe('nextOccurrence', () => {
+  // 2026-10-13 is a Tuesday (weekday 2).
+  it('is today when the event has not started yet', () => {
+    expect(nextOccurrence(2, '19:00', at('2026-10-13T10:00'))).toEqual(at('2026-10-13T19:00'))
+  })
+
+  it('is next week when today’s has already started', () => {
+    expect(nextOccurrence(2, '19:00', at('2026-10-13T19:00'))).toEqual(at('2026-10-20T19:00'))
+  })
+
+  it('finds a later day this week', () => {
+    expect(nextOccurrence(5, '08:30', at('2026-10-13T10:00'))).toEqual(at('2026-10-16T08:30'))
+  })
+
+  it('wraps into next week', () => {
+    expect(nextOccurrence(1, '18:00', at('2026-10-17T12:00'))).toEqual(at('2026-10-19T18:00'))
   })
 })

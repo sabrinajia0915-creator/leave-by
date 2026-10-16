@@ -96,3 +96,13 @@ export function lateMessage(lateMin: number, arrive: Date, eventName: string): s
   const rounded = Math.ceil(lateMin / 5) * 5
   return `Running about ${rounded} min late${name ? ` for ${name}` : ''}, I'll be there around ${clock(arrive)}. Sorry!`
 }
+
+/** The next time a weekly event starts: today if it hasn't started yet, else a later day. */
+export function nextOccurrence(weekday: number, time: string, now: Date): Date {
+  const [h, m] = time.split(':').map(Number)
+  const d = new Date(now)
+  d.setHours(h, m, 0, 0)
+  d.setDate(d.getDate() + ((weekday - now.getDay() + 7) % 7))
+  if (d.getTime() <= now.getTime()) d.setDate(d.getDate() + 7)
+  return d
+}
