@@ -29,6 +29,15 @@ function clientIp(req: Request) {
   )
 }
 
+function sameSite(origin: string | null, url: string) {
+  if (!origin) return false
+  try {
+    return new URL(origin).host === new URL(url).host
+  } catch {
+    return false
+  }
+}
+
 export const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -46,9 +55,9 @@ export async function guard(
 ): Promise<{ body: Record<string, unknown> } | { error: Response }> {
   if (req.method !== 'POST') return { error: json({ error: 'method_not_allowed' }, 405) }
 
-  // Browsers always send Origin on POST; reject other websites calling us.
-  const origin = req.headers.get('origin')
-  if (origin && new URL(origin).host !== new URL(req.url).host) {
+  // Browsers always send Origin on POST: require it to be this site, so other
+  // websites and bare scripts can't use our Google key. ("null" or garbage → 403.)
+  if (!sameSite(req.headers.get('origin'), req.url)) {
     return { error: json({ error: 'forbidden' }, 403) }
   }
   if (!req.headers.get('content-type')?.includes('application/json')) {

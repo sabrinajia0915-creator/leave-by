@@ -71,6 +71,17 @@ Run on 2026-10-06. The `/security-review` command needs the session to be open i
 | Dependency vulnerabilities (`npm audit`) | **0.** |
 | HTTPS | Enforced by Vercel (HSTS). |
 
+### Second review: 2026-10-16, before making the repo public
+
+| Finding | Status |
+| --- | --- |
+| Secrets anywhere in the Git history (keys, `.env`, `.vercel`) | **None found.** Commits use GitHub's no-reply email. |
+| API accepted requests with **no** `Origin` header (scripts, curl), so it could be used outside the app | **Fixed:** an `Origin` matching this site is now required. Scripts can still fake headers, so rate limits, Google quotas and the $1 budget alert remain the backstop. |
+| A malformed `Origin` (e.g. `null`) crashed the function (HTTP 500) | **Fixed:** it is now rejected with 403. Tests added for both cases. |
+| Missing browser security headers | **Fixed:** `vercel.json` adds a Content Security Policy (only this site's own code may run), clickjacking protection, `nosniff`, a referrer policy and a permissions policy. Tested against the built app: no violations. |
+| New features: running-late text, story card, weekly events, Google Calendar link | **No issues.** The text and image are made on the device and only leave through the user's own share; links are built with URL encoding; saved data is validated when loaded. |
+| Dependency vulnerabilities (`npm audit`) | **0.** |
+
 ## Verification status
 
 - ✅ 46 unit tests (`npm test`): the calculation, running-late estimates and messages, next weekly date, prep preset and weekly event validation, the calendar file (incl. weekly repeats), the server's input checks, rate limiting, the driving traffic refinement and the transit departure time

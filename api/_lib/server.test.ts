@@ -40,6 +40,16 @@ describe('request guard', () => {
     expect(res.status).toBe(403)
   })
 
+  it('rejects requests with no or a malformed Origin', async () => {
+    const noOrigin = new Request(`${HOST}/api/autocomplete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: 'park' }),
+    })
+    expect((await autocompletePOST(noOrigin)).status).toBe(403)
+    expect((await autocompletePOST(req('/api/autocomplete', { input: 'park' }, { Origin: 'null' }))).status).toBe(403)
+  })
+
   it('rejects non-JSON bodies', async () => {
     const res = await autocompletePOST(
       req('/api/autocomplete', 'input=park', { 'Content-Type': 'application/x-www-form-urlencoded' }),
