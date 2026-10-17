@@ -34,6 +34,8 @@ interface Props {
   travelNote?: string
   mapsUrl?: string
   onAddToCalendar: () => void
+  /** Opens Google Calendar with the plan pre-filled. */
+  googleCalendarUrl: string
   onShare: () => void
 }
 
@@ -186,9 +188,15 @@ export function ResultCard(props: Props) {
             Open in Google Maps
           </a>
         )}
-        <button type="button" className="btn" onClick={props.onAddToCalendar}>
-          Add reminders to calendar
-        </button>
+        <div className="cal-group" role="group" aria-label="Add to calendar">
+          <span className="cal-label">Add to calendar</span>
+          <a className="btn" href={props.googleCalendarUrl} target="_blank" rel="noreferrer">
+            Google Calendar
+          </a>
+          <button type="button" className="btn" onClick={props.onAddToCalendar}>
+            Apple / Outlook
+          </button>
+        </div>
         <button type="button" className="btn btn-share" onClick={props.onShare}>
           Share my plan ✦
         </button>

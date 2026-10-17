@@ -76,3 +76,39 @@ export function downloadIcs(content: string, filename: string) {
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+/**
+ * A link that opens Google Calendar with the trip pre-filled: one event from
+ * "start getting ready" to arrival, in local time (so weekly repeats don't
+ * drift with daylight saving).
+ */
+export function googleCalendarUrl(
+  s: Schedule,
+  eventName: string,
+  destination: string,
+  mapsUrl: string,
+  opts: { weekly?: boolean; prepLabel?: string; timeZone?: string } = {},
+) {
+  const name = eventName.trim() || 'your event'
+  const t = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const details = [
+    `Start getting ready: ${t(s.startPrep)}${opts.prepLabel ? ` (${opts.prepLabel})` : ''}`,
+    `Leave by: ${t(s.leaveBy)}`,
+    `Arrive: ${t(s.arriveAt)}`,
+    `${name} starts: ${t(s.eventTime)}`,
+    mapsUrl && `Directions: ${mapsUrl}`,
+    opts.weekly && "Repeats weekly; times use this week's travel estimate.",
+  ]
+    .filter(Boolean)
+    .join('\n')
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `Get ready & go: ${name}`,
+    dates: `${localStamp(s.startPrep)}/${localStamp(s.arriveAt)}`,
+    ctz: opts.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+    details,
+  })
+  if (destination) params.set('location', destination)
+  if (opts.weekly) params.set('recur', 'RRULE:FREQ=WEEKLY')
+  return `https://calendar.google.com/calendar/render?${params}`
+}

@@ -534,6 +534,9 @@ textarea { height: auto; padding: 10px 14px; resize: vertical; display: block; }
 }
 .btn:hover { border-color: var(--ink-3); }
 .btn:first-child { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.cal-group { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.cal-label { flex-basis: 100%; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.cal-group .btn { flex: 1 1 140px; }
 .btn-share { flex-basis: 100%; background: var(--accent-soft); border-color: transparent; color: var(--ink); }
 .btn-share:hover { border-color: var(--accent); }
 

@@ -56,6 +56,7 @@ start getting ready = leave by − getting-ready time
 | **Running late mode.** Once you're past your leave time, the headline says how late you'll arrive if you leave now, the arrival time turns red, and an editable "Running about 10 min late…" text can be sent (share sheet / Messages) or copied. | Knowing you're late is only half the problem; telling the people waiting should take one tap. The message never leaves the device except through the user's own share. |
 | **Weekly events.** "Repeat every Tuesday" saves an event (place, mode, prep, buffer) on the device; a chip fills in the form for its next date, and calendar reminders repeat weekly in local time. | Classes and routines happen every week; re-entering them each time was the main friction. Local time keeps reminders right across daylight-saving changes. |
 | **Soft-neutral redesign + shareable plan card.** Cream/taupe palette with an espresso dark mode, Instrument Serif for times and headings, pill shapes, more white space. "Share my plan" draws a 9:16 story image (event, leave-by time, timeline, prep preset) and opens the share sheet, or downloads it. | Make it feel like something people want to show, not just use; the story card turns a plan into something postable. |
+| **One-tap Google Calendar.** "Add to calendar" now offers Google Calendar (a pre-filled event from getting ready to arrival, repeating weekly when set) next to Apple / Outlook (the .ics file). | Most people use Google Calendar; a link opens it in one tap with no file to import and no sign-in. |
 
 ## Security review
 
@@ -72,7 +73,7 @@ Run on 2026-10-06. The `/security-review` command needs the session to be open i
 
 ## Verification status
 
-- ✅ 44 unit tests (`npm test`): the calculation, running-late estimates and messages, next weekly date, prep preset and weekly event validation, the calendar file (incl. weekly repeats), the server's input checks, rate limiting, the driving traffic refinement and the transit departure time
+- ✅ 46 unit tests (`npm test`): the calculation, running-late estimates and messages, next weekly date, prep preset and weekly event validation, the calendar file (incl. weekly repeats), the server's input checks, rate limiting, the driving traffic refinement and the transit departure time
 - ✅ Real trips in all four modes, locally and on the live site; driving matched Google's traffic-aware time for the same departure
 - ✅ Phone width (375 px) in dark mode, with no horizontal scrolling
 - ✅ Manual travel-time fallback

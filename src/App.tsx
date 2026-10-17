@@ -6,7 +6,7 @@ import { PrepPresetPicker } from './components/PrepPresetPicker'
 import { WeeklyEvents } from './components/WeeklyEvents'
 import { PlaceInput } from './components/PlaceInput'
 import { ResultCard } from './components/ResultCard'
-import { buildIcs, downloadIcs } from './lib/ics'
+import { buildIcs, downloadIcs, googleCalendarUrl } from './lib/ics'
 import { drawShareCard, shareImage } from './lib/shareCard'
 import {
   directionsUrl,
@@ -386,6 +386,10 @@ export default function App() {
               travelNote={travelNote}
               mapsUrl={mapsUrl}
               onAddToCalendar={addToCalendar}
+              googleCalendarUrl={googleCalendarUrl(schedule, eventName, destination?.label ?? '', mapsUrl ?? '', {
+                weekly: repeatWeekly,
+                prepLabel: prepPreset?.name,
+              })}
               onShare={sharePlan}
             />
           ) : (
